@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+iframe {
+  height: 300px;
+  width: 900px;
+}
