@@ -19,6 +19,7 @@ export const config: Config = {
     // initialLoadUrl: 'http://site-org.fakehub.fakegis.com',
     reloadStrategy: 'pageReload',
     port: 4444,
+    openBrowser: false, // don't open at localhost
     // https: {
     //   cert: readFileSync('ssl/cert.pem', 'utf8'),
     //   key: readFileSync('ssl/key.pem', 'utf8')
