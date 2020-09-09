@@ -5,7 +5,8 @@ Scenario:
 - A private Hub Site is running at https://internal.mycounty.gov
 - User visits the site, and authenticates via oAuth.
 - The site then renders it's layout and embeds a private StoryMap
-- Given the site is running on a custom domain, how do we securely get authentication information from the "host" (the Site) into the embedded StoryMap?
+- How do we securely get authentication information from the "host" (the Site) into the embedded StoryMap?
+
 
 Solution:
 - The Host and Embedded apps utilize the ArcGIS REST Js `UserSession` class to communicate between the frames via the [postMessage]() API that's built into browsers.
