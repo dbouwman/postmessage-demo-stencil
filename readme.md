@@ -24,7 +24,7 @@ Solution:
   this.session.enablePostMessageAuth(validOrigins);
 ```
 
-Behind the scenes, `UserSession` will attach a `message` event listener on the window, and when it gets message with `type === 'ago:auth:requestCredential` and the requesting origin is in the list of `validOrigins`, it will send back a serialized `ICredential` which can be used with Identity Manager or `UserSession`.
+Behind the scenes, `UserSession` will attach a `message` event listener on the window, and when it gets message with `type === 'arcgis:auth:requestCredential` and the requesting origin is in the list of `validOrigins`, it will send back a serialized `ICredential` which can be used with Identity Manager or `UserSession`.
 
 When the Host app transitions to another route, it must detach this event handler to prevent memory leaks.
 
@@ -61,7 +61,7 @@ if (embed === 'iframe') {
 }
 ```
 
-Behind the scenes, `UserSession` is using `postMessage` to send a request for credential `{type: 'ago:auth:requestCredential'}`. It also listens for returning messages, and if passed a credential (`type === 'ago:auth:credential'`) it creates an instance of a `UserSession` from the `ICredential`.
+Behind the scenes, `UserSession` is using `postMessage` to send a request for credential `{type: 'arcgis:auth:requestCredential'}`. It also listens for returning messages, and if passed a credential (`type === 'arcgis:auth:credential'`) it creates an instance of a `UserSession` from the `ICredential`.
 
 ---
 
@@ -70,32 +70,34 @@ Messages send via `postMessage` can be any object, but by convention usually hav
 
 | Type | Description |
 | -- | -- |
-| `ago:auth:requestCredential` | Request credential from host app. Request will be rejected if the `event.origin` is not in the `validOrigins` list |
-| `ago:auth:credential` | Returning the credential in `event.credential` |
-| `ago:auth:rejected` | Returned if the host declines to send credentials. `event.message` will contain the reason |
+| `arcgis:auth:requestCredential` | Request credential from host app. Request will be rejected if the `event.origin` is not in the `validOrigins` list |
+| `arcgis:auth:credential` | Returning the credential in `event.credential` |
+| `arcgis:auth:rejected` | Returned if the host declines to send credentials. `event.message` will contain the reason |
 
 
 
 
 # Message Details
 
-## `ago:auth:requestCredential`
+## `arcgis:auth:requestCredential`
 Sent from an embedded app, to the parent.
 
 Message Object
 ```json
 {
-  "type": "ago:auth:requestCredential",
+  "type": "arcgis:auth:requestCredential"
 }
 ```
 
-## `ago:auth:credential`
-Send from the host app to the embedded app
+## `arcgis:auth:credential`
+Send from the host app to the embedded app. 
+- Embedded application is responsible for calling `exchangeToken` or `validateAppAccess`
+
 
 Message Object
 ```json
 {
-  "type": "ago:auth:requestCredential",
+  "type": "arcgis:auth:requestCredential",
   "credential": {
     "token": "thetoken",
     "userId": "jsmith",
@@ -106,14 +108,14 @@ Message Object
 }
 ```
 
-## `ago:auth:rejected`
+## `arcgis:auth:rejected`
 Sent from an host app, to an embedded app, with an error indicating why 
 
 Message Object
 ```json
 {
-  "type": "ago:auth:rejected",
-  "message": "Rejected authentication request from https://evilcorp.com."
+  "type": "arcgis:auth:rejected",
+  "message": "Rejected authentication request."
 }
 ```
 

@@ -18,9 +18,9 @@ export class EmbeddedUserSession extends UserSession {
     return (event) => {
       if (validOrigins.indexOf(event.origin) > -1) {
         const credential = this.toCredential();
-        event.source.postMessage({type: 'ago:auth:credential', credential}, event.origin);
+        event.source.postMessage({type: 'arcgis:auth:credential', credential}, event.origin);
       } else {
-        event.source.postMessage({type: 'ago:auth:rejected', message: `Rejected authentication request from ${event.origin}.`}, event.origin);
+        event.source.postMessage({type: 'arcgis:auth:rejected', message: `Rejected authentication request.`}, event.origin);
       }
     }
   }
@@ -47,7 +47,7 @@ export class EmbeddedUserSession extends UserSession {
    * 
    * @param parentOrigin origin of the parent frame. Passed into the embedded application as `parentOrigin` query param
    */
-  public static fromParent (parentOrigin:string): Promise<any> {
+  public static fromParent (parentOrigin:string, clientId:string): Promise<any> {
     // Declar handler outside of promise scope so we can detach it
     let handler;
     // return a promise...
@@ -63,7 +63,7 @@ export class EmbeddedUserSession extends UserSession {
       };
       // add listener
       window.addEventListener('message', handler, false);
-      window.parent.postMessage({type: 'ago:auth:requestCredential'}, parentOrigin);
+      window.parent.postMessage({type: 'arcgis:auth:requestCredential'}, parentOrigin);
     })
     .then((session) => {
       window.removeEventListener('message', handler, false);
@@ -76,10 +76,12 @@ export class EmbeddedUserSession extends UserSession {
    * @param event DOM Event
    */
   private static parentMessageHandler (event):UserSession {
-    if (event.data.type === 'ago:auth:credential') {
+    if (event.data.type === 'arcgis:auth:credential') {
+      // TODO: see if we can exchange token for one tied to the app itself (will need appId/clientId)
+      // Note: exchance token may fail if user lacks access to the application via licensing
       return EmbeddedUserSession.fromCredential(event.data.credential);
     }
-    if (event.data.type === 'ago:auth:rejected') {
+    if (event.data.type === 'arcgis:auth:rejected') {
       throw new Error(event.data.message);
     }
   }
