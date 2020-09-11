@@ -47,7 +47,7 @@ export class EmbeddedUserSession extends UserSession {
    * 
    * @param parentOrigin origin of the parent frame. Passed into the embedded application as `parentOrigin` query param
    */
-  public static fromParent (parentOrigin:string, clientId:string): Promise<any> {
+  public static fromParent (parentOrigin:string): Promise<any> {
     // Declar handler outside of promise scope so we can detach it
     let handler;
     // return a promise...
