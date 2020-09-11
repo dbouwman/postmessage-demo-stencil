@@ -9,9 +9,9 @@ Scenario:
 
 
 Solution:
-- The Host and Embedded apps utilize the ArcGIS REST Js `UserSession` class to communicate between the frames via the [postMessage]() API that's built into browsers.
+- The Host and Embedded apps utilize the ArcGIS REST Js `UserSession` class to communicate between the frames via the [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) API that's built into browsers.
 
-## Proposed API
+## ArcGIS Rest Js Wrappers
 
 ### For Host Apps
 - host app handles auth via normal oAuth processes and has a `UserSession` instance
@@ -24,13 +24,14 @@ Solution:
   this.session.enablePostMessageAuth(validOrigins);
 ```
 
-Behind the scenes, `UserSession` will attach a `message` event listener on the window, and when it gets message with `type === 'ago:auth:requestCredential` and the requesting origin is in the list of `validOrigins` it will send back a serialized `ICredential`. 
+Behind the scenes, `UserSession` will attach a `message` event listener on the window, and when it gets message with `type === 'ago:auth:requestCredential` and the requesting origin is in the list of `validOrigins`, it will send back a serialized `ICredential` which can be used with Identity Manager or `UserSession`.
 
-When the Host app transitions to another route, it must detach this event handler to prevent memory leaks
+When the Host app transitions to another route, it must detach this event handler to prevent memory leaks.
 
 ```js
   // use a framework lifecycle hook that is called 
-  // when the component is being destroyed
+  // when the component is being destroyed.
+  // i.e. for a Stencil Component...
   disconnectedCallback () {
     this.session.disablePostMessageAuth();
   }
@@ -62,7 +63,9 @@ if (embed === 'iframe') {
 
 Behind the scenes, `UserSession` is using `postMessage` to send a request for credential `{type: 'ago:auth:requestCredential'}`. It also listens for returning messages, and if passed a credential (`type === 'ago:auth:credential'`) it creates an instance of a `UserSession` from the `ICredential`.
 
-## Post Message Types
+---
+
+# Post Message Types
 Messages send via `postMessage` can be any object, but by convention usually have a `type` property that describes what sort of message it is.
 
 | Type | Description |
@@ -70,6 +73,50 @@ Messages send via `postMessage` can be any object, but by convention usually hav
 | `ago:auth:requestCredential` | Request credential from host app. Request will be rejected if the `event.origin` is not in the `validOrigins` list |
 | `ago:auth:credential` | Returning the credential in `event.credential` |
 | `ago:auth:rejected` | Returned if the host declines to send credentials. `event.message` will contain the reason |
+
+
+
+
+# Message Details
+
+## `ago:auth:requestCredential`
+Sent from an embedded app, to the parent.
+
+Message Object
+```json
+{
+  "type": "ago:auth:requestCredential",
+}
+```
+
+## `ago:auth:credential`
+Send from the host app to the embedded app
+
+Message Object
+```json
+{
+  "type": "ago:auth:requestCredential",
+  "credential": {
+    "token": "thetoken",
+    "userId": "jsmith",
+    "server": "https://www.arcgis.com",
+    "ssl": true,
+    "expires": 1599831467093
+  }
+}
+```
+
+## `ago:auth:rejected`
+Sent from an host app, to an embedded app, with an error indicating why 
+
+Message Object
+```json
+{
+  "type": "ago:auth:rejected",
+  "message": "Rejected authentication request from https://evilcorp.com."
+}
+```
+
 
 
 ## Demo Application
@@ -101,7 +148,7 @@ $ npm start
 
 This will build the app and start the development server. 
 
-Visit http://site-org.fakehub.fakegis.com in your browser
+Visit http://site-org.fakehub.fakegis.com:4444 in your browser
 
 Click sign-in, enter credentials in the pop-up, then use the example link on the homepage.
 

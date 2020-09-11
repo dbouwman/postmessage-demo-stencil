@@ -20,7 +20,7 @@ export class EmbeddedUserSession extends UserSession {
         const credential = this.toCredential();
         event.source.postMessage({type: 'ago:auth:credential', credential}, event.origin);
       } else {
-        event.source.postMessage({type: 'ago:auth:rejected', message: `Origin ${event.origin} not allowed.`}, event.origin);
+        event.source.postMessage({type: 'ago:auth:rejected', message: `Rejected authentication request from ${event.origin}.`}, event.origin);
       }
     }
   }
